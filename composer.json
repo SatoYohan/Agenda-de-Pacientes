@@ -1,0 +1,20 @@
+{
+  "name": "satoyohan/agenda-de-pacientes",
+  "description": "Agenda de Pacientes project",
+  "type": "project",
+  "authors": [
+    {
+      "name": "Abner Yohan Sato",
+      "email": "satoabner.as@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "Core\\": "core/"
+    }
+  }
+}
