@@ -4,8 +4,8 @@ Sistema de agendamento de pacientes desenvolvido em PHP, seguindo o padrão MVC,
 
 ### Desenvolvedores
 - Abner Yohan Sato - RA 2459299
-- Ricardo Koji Takenaka - RA (Adicionar RA)
-- Lucas Eduardo Vidal - RA (Adicionar RA)
+- Ricardo Koji Takenaka - RA 2509857
+- Lucas Eduardo Vidal - RA 2000881
 
 ---
 
@@ -170,3 +170,84 @@ Após a configuração, acesse o sistema pelo navegador:
 ---
 
 ## 🧰 Estrutura de Diretórios Principal
+
+Agenda-de-Pacientes/
+├── app/                     # Contém a lógica principal da aplicação
+│   ├── Controllers/         # Controladores (lógica de requisição/resposta)
+│   ├── Models/              # Modelos (lógica de negócios e acesso a dados)
+│   └── Views/               # Arquivos de apresentação (HTML, templates)
+│       └── layouts/         # Layouts base das páginas
+├── config/                  # Arquivos de configuração (banco de dados, aplicação)
+├── core/                    # Classes base do framework MVC (Controller, Model)
+├── public/                  # Deveria ser o DocumentRoot idealmente (contém assets públicos como CSS, JS, imagens)
+│   └── css/
+│       └── style.css        # CSS customizado
+├── vendor/                  # Dependências gerenciadas pelo Composer (não versionar)
+├── .htaccess                # Configurações do Apache para reescrita de URL (se aplicável)
+├── composer.json            # Define as dependências do projeto para o Composer
+├── composer.lock            # Registra as versões exatas das dependências instaladas
+├── index.php                # Ponto de entrada da aplicação (Front Controller)
+└── php-error.log            # Log de erros do PHP (se configurado)
+
+*Nota sobre `public/`*: Idealmente, apenas o conteúdo da pasta `public/` (contendo `index.php` e assets) deveria ser acessível diretamente pelo navegador. Os outros diretórios (`app`, `core`, `config`, `vendor`) ficariam fora do `DocumentRoot` por segurança. A configuração atual com `DocumentRoot` na raiz do projeto é mais simples para iniciar, mas considere refatorar para um `DocumentRoot` em `public/` em um ambiente de produção.
+
+---
+
+## 🔐 Autenticação e Autorização
+
+- Sistema de login/logout com validação de credenciais no backend.
+- Uso de Sessões PHP para persistir o estado de autenticação do usuário.
+- Controle de acesso baseado em perfis de usuário (roles):
+  - `admin`: Acesso total ao sistema, incluindo gerenciamento de pacientes.
+  - `normal`: Acesso limitado ao gerenciamento de suas próprias consultas (ou visualização, dependendo da implementação).
+
+---
+
+## 🌟 Funcionalidades Implementadas (Trabalho 2)
+
+Este projeto implementa os seguintes requisitos:
+
+- **PHP 8+ e Orientação a Objetos:** Código estruturado em classes, utilizando conceitos de OOP.
+- **Composer e Autoload:** Gerenciamento de dependências e autoloading PSR-4 para organização do código.
+- **Banco de Dados via PDO:** Interação com o banco de dados MySQL/MariaDB utilizando PDO para maior segurança e portabilidade.
+- **Padrão MVC e Sistema de Rotas:**
+    - Lógica de aplicação separada em Modelos, Visões e Controladores.
+    - URLs amigáveis e transparentes gerenciadas por um sistema de roteamento simples no `index.php`.
+- **Interface do Usuário:**
+    - Interface responsiva utilizando Bootstrap 5.
+    - Mensagens de feedback (sucesso, erro, informação) para o usuário.
+    - Formulários com validação de dados no lado do servidor.
+- **CRUDs:**
+    - Gerenciamento completo de Pacientes (Criar, Ler, Atualizar, Excluir) para administradores.
+    - Gerenciamento completo de Consultas (Criar, Ler, Atualizar, Excluir).
+
+---
+
+## 📂 Estrutura do Banco de Dados
+
+O script para criação das tabelas e inserção de dados iniciais está em `/config/database.sql`.
+
+**Tabelas Principais:**
+- `users`: Armazena os dados dos usuários do sistema (login, senha HASHED, perfil).
+- `pacientes`: Armazena os dados dos pacientes.
+- `consultas`: Armazena os detalhes das consultas agendadas, relacionando-se com pacientes.
+
+---
+
+## 🚀 Execução e Desenvolvimento
+
+1.  Siga o "Guia de Instalação".
+2.  Para desenvolvimento, qualquer editor de código que suporte PHP é adequado (VSCode, PhpStorm, Sublime Text, etc.).
+3.  Certifique-se de que seu servidor web está configurado para servir a partir da raiz correta do projeto e que o `mod_rewrite` (ou equivalente) está ativo.
+4.  Acesse a URL configurada (ex: `http://agenda.local/` ou `http://localhost/Agenda-de-Pacientes/`).
+5.  O arquivo `test.php` é um arquivo isolado para testes pontuais e não faz parte do fluxo principal da aplicação MVC.
+
+---
+
+## 🏛️ Baseado nos Repositórios (Inspiração)
+
+- [web-servidor-aula-2](https://github.com/drantunes/web-servidor-aula-2)
+- [web-servidor-aula-5](https://github.com/drantunes/web-servidor-aula-5)
+- [web-servidor-aula-7](https://github.com/drantunes/web-servidor-aula-7)
+- [web-servidor-aula-9](https://github.com/drantunes/web-servidor-aula-9)
+- [web-servidor-aula-11](https://github.com/drantunes/web-servidor-aula-11)
