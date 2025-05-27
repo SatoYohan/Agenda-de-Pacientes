@@ -1,5 +1,10 @@
 <?php
 
+namespace App\Models;
+
+use Core\Model; // Import the base Model class
+use PDO; // Import PDO for database operations
+
 class Consulta extends Model
 {
     public function findAllWithPaciente(): array

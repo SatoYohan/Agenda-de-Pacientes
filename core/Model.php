@@ -1,6 +1,11 @@
 <?php
 
-class Model {
+namespace Core; // <--- ADICIONE ESTA LINHA
+
+use PDO; // Adicione esta linha se você não tiver adicionado antes, para a classe PDO
+use PDOException; // Adicione esta linha para a classe PDOException
+
+class Model { //
     protected PDO $db;
 
     public function __construct() {
@@ -12,7 +17,10 @@ class Model {
                 [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
             );
         } catch (PDOException $e) {
-            die("Erro na conexão: " . $e->getMessage());
+            // É melhor logar o erro ou lançar uma exceção mais genérica aqui
+            // em vez de usar die() em um model.
+            // Por agora, manteremos o die para consistência com o código original.
+            die("Erro na conexão com o banco de dados: " . $e->getMessage());
         }
     }
 }

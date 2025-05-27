@@ -1,5 +1,10 @@
 <?php
 
+namespace App\Models;
+
+use Core\Model; // Import the base Model class
+use PDO; // Import PDO for database operations
+
 class Paciente extends Model
 {
     public function findAll(int $limit = 10, int $offset = 0): array
