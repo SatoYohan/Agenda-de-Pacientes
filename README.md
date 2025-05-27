@@ -1,6 +1,8 @@
 # Agenda-de-Pacientes
 
-### Abner Yohan Sato - RA 2459299
+### Abner Yohan Sato -  2459299
+### Ricardo Koji Takenaka -
+### Lucas Eduardo Vidal -
 
 ---
 
