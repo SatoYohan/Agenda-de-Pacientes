@@ -1,94 +1,168 @@
 <?php
 
+namespace App\Controllers; // Add App\Controllers namespace
+
+use Core\Controller; // Import the base Controller class
+
 class PacienteController extends Controller
 {
+    private function authorizeAdmin() // Renamed for clarity
+    {
+        if (session_status() == PHP_SESSION_NONE) { // Ensure session is started
+            session_start();
+        }
+        if (!isset($_SESSION['user'])) {
+            $this->setFlashMessage('Você precisa estar logado para acessar esta página.', 'warning');
+            $this->redirect('/login/index');
+        } elseif ($_SESSION['user']['role'] !== 'admin') {
+            $this->setFlashMessage('Acesso negado. Somente administradores.', 'danger');
+            // Redirect to a generic page for non-admins or their specific dashboard
+            $this->redirect('/consulta/index'); // Or a dedicated "access denied" page
+        }
+    }
+
     public function index()
     {
-        $this->authorize();
+        $this->authorizeAdmin();
         $pacienteModel = $this->model('Paciente');
-        $pacientes = $pacienteModel->findAll();
-        $this->view('paciente/index', ['pacientes' => $pacientes]);
+
+        // Pagination Logic - Moved to controller
+        $currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
+        $perPage = 10; // Or from a config file
+
+        $totalPacientes = $pacienteModel->countAll(); // Assuming this method exists in your Paciente model
+        $totalPages = ceil($totalPacientes / $perPage);
+        $offset = ($currentPage - 1) * $perPage;
+
+        $pacientes = $pacienteModel->findAll($perPage, $offset); // Assuming findAll accepts limit and offset
+
+        $this->view('paciente/index', [
+            'pacientes' => $pacientes,
+            'currentPage' => $currentPage,
+            'totalPages' => $totalPages,
+            'totalPacientes' => $totalPacientes,
+            'title' => 'Pacientes'
+        ]);
     }
 
     public function create()
     {
-        $this->authorize();
-        $this->view('paciente/create');
+        $this->authorizeAdmin();
+        $this->view('paciente/create', ['title' => 'Novo Paciente']);
     }
 
     public function store()
     {
-        $this->authorize();
+        $this->authorizeAdmin();
 
-        $nome = trim($_POST['nome'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $telefone = trim($_POST['telefone'] ?? '');
+        $nome = trim(filter_input(INPUT_POST, 'nome', FILTER_SANITIZE_STRING) ?? '');
+        $email = trim(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL) ?? '');
+        $telefone = trim(filter_input(INPUT_POST, 'telefone', FILTER_SANITIZE_STRING) ?? '');
 
         $errors = [];
-        if (!$nome) $errors[] = 'Nome é obrigatório';
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Email inválido';
-        if (!$telefone) $errors[] = 'Telefone é obrigatório';
+        if (empty($nome)) $errors[] = 'Nome é obrigatório.';
+        if (empty($email)) {
+            $errors[] = 'Email é obrigatório.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Email inválido.';
+        }
+        if (empty($telefone)) $errors[] = 'Telefone é obrigatório.';
+        // Add more specific validation for telefone if needed (e.g., format)
 
-        if ($errors) {
-            $this->view('paciente/create', compact('errors', 'nome', 'email', 'telefone'));
+        if (!empty($errors)) {
+            $this->view('paciente/create', [
+                'errors' => $errors,
+                'nome' => $nome,
+                'email' => $email,
+                'telefone' => $telefone,
+                'title' => 'Novo Paciente'
+            ]);
             return;
         }
 
         $pacienteModel = $this->model('Paciente');
         $pacienteModel->create($nome, $email, $telefone);
 
-        header('Location: ' . BASE_URL . '/paciente/index');
-        exit;
+        $this->setFlashMessage('Paciente criado com sucesso!', 'success');
+        $this->redirect('/paciente/index');
     }
 
     public function edit($id)
     {
-        $this->authorize();
+        $this->authorizeAdmin();
+        $id = (int)$id;
         $pacienteModel = $this->model('Paciente');
         $paciente = $pacienteModel->findById($id);
-        $this->view('paciente/edit', ['paciente' => $paciente]);
+
+        if (!$paciente) {
+            $this->setFlashMessage('Paciente não encontrado.', 'danger');
+            $this->redirect('/paciente/index');
+            return;
+        }
+
+        $this->view('paciente/edit', [
+            'paciente' => $paciente,
+            'title' => 'Editar Paciente'
+        ]);
     }
 
     public function update($id)
     {
-        $this->authorize();
+        $this->authorizeAdmin();
+        $id = (int)$id;
 
-        $nome = trim($_POST['nome'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $telefone = trim($_POST['telefone'] ?? '');
+        $nome = trim(filter_input(INPUT_POST, 'nome', FILTER_SANITIZE_STRING) ?? '');
+        $email = trim(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL) ?? '');
+        $telefone = trim(filter_input(INPUT_POST, 'telefone', FILTER_SANITIZE_STRING) ?? '');
 
         $errors = [];
-        if (!$nome) $errors[] = 'Nome é obrigatório';
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Email inválido';
-        if (!$telefone) $errors[] = 'Telefone é obrigatório';
+        if (empty($nome)) $errors[] = 'Nome é obrigatório.';
+        if (empty($email)) {
+            $errors[] = 'Email é obrigatório.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Email inválido.';
+        }
+        if (empty($telefone)) $errors[] = 'Telefone é obrigatório.';
 
-        if ($errors) {
-            $paciente = compact('nome', 'email', 'telefone');
-            $paciente['id'] = $id;
-            $this->view('paciente/edit', compact('errors', 'paciente'));
+        if (!empty($errors)) {
+            // Fetch the original paciente data to avoid losing the ID in the view
+            $pacienteOriginal = $this->model('Paciente')->findById($id);
+            $pacienteDataForView = [
+                'id' => $id, // Ensure ID is present
+                'nome' => $nome, // Use submitted value
+                'email' => $email, // Use submitted value
+                'telefone' => $telefone, // Use submitted value
+            ];
+
+            $this->view('paciente/edit', [
+                'errors' => $errors,
+                'paciente' => array_merge($pacienteOriginal ?: [], $pacienteDataForView),
+                'title' => 'Editar Paciente'
+            ]);
             return;
         }
 
         $pacienteModel = $this->model('Paciente');
         $pacienteModel->update($id, $nome, $email, $telefone);
 
-        header('Location: ' . BASE_URL . '/paciente/index');
-        exit;
+        $this->setFlashMessage('Paciente atualizado com sucesso!', 'success');
+        $this->redirect('/paciente/index');
     }
 
     public function delete($id)
     {
-        $this->authorize();
-        $this->model('Paciente')->delete($id);
-        header('Location: ' . BASE_URL . '/paciente/index');
-        exit;
-    }
-
-    private function authorize()
-    {
-        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
-            header('Location: ' . BASE_URL . '/login/index');
-            exit;
+        $this->authorizeAdmin();
+        $id = (int)$id;
+        // Optional: Add a check to see if the paciente exists before attempting to delete
+        $pacienteModel = $this->model('Paciente');
+        if (!$pacienteModel->findById($id)) {
+            $this->setFlashMessage('Paciente não encontrado ou já excluído.', 'warning');
+            $this->redirect('/paciente/index');
+            return;
         }
+
+        $pacienteModel->delete($id);
+        $this->setFlashMessage('Paciente excluído com sucesso!', 'success');
+        $this->redirect('/paciente/index');
     }
 }
