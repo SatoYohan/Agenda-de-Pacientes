@@ -22,7 +22,7 @@ $controllerName = ucfirst($url[0]) . 'Controller';
 $method = $url[1] ?? 'index';
 $params = array_slice($url, 2);
 
-$controllerPath = __DIR__ . '/app/controllers/' . $controllerName . '.php';
+$controllerPath = __DIR__ . '/app/Controllers/' . $controllerName . '.php';
 
 if (file_exists($controllerPath)) {
     require_once $controllerPath;
