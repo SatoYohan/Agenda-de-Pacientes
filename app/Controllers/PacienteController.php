@@ -87,6 +87,7 @@ class PacienteController extends Controller
         $this->redirect('/paciente/index');
     }
 
+    // PacienteController.php
     public function edit($id)
     {
         $this->authorizeAdmin();
@@ -100,9 +101,15 @@ class PacienteController extends Controller
             return;
         }
 
-        $this->view('paciente/edit', [
-            'paciente' => $paciente,
-            'title' => 'Editar Paciente'
+        // Em vez de 'paciente/edit', chamamos 'paciente/create'
+        // Passamos os dados do paciente para preencher o formulário
+        $this->view('paciente/create', [
+            'paciente' => $paciente, // Dados para preencher o formulário
+            'title' => 'Editar Paciente',
+            // Passar os valores individuais também para facilitar o preenchimento do formulário
+            'nome' => $paciente['nome'],
+            'email' => $paciente['email'],
+            'telefone' => $paciente['telefone']
         ]);
     }
 
